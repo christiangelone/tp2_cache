@@ -1,0 +1,131 @@
+\documentclass[a4paper,11pt]{article}
+
+\usepackage{graphicx}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{multirow}
+\usepackage{fancyhdr}
+\usepackage{url}
+
+\title{66:20 Organización de Computadoras\\
+       Trabajo práctico 2: Memorias caché}
+\author{}
+\sloppy
+\date{}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}   % quita el número en la primer página
+%\renewcommand{\labelenumi}{\alph{enumi}.}
+
+\section{Objetivos}
+Familiarizarse con el funcionamiento de la memoria caché implementando una simulación de una caché dada.
+\section{Alcance}
+
+Este trabajo práctico es de elaboración grupal, evaluación individual, y de
+carácter obligatorio para todos alumnos del curso.
+
+\section{Requisitos}
+El trabajo deberá ser entregado personalmente, en la fecha estipulada, con una
+carátula que contenga los datos completos de todos los integrantes. 
+
+Además, es necesario que el trabajo práctico incluya (entre otras cosas, ver 
+sección \ref{secc::informe}), la presentación de los resultados obtenidos, 
+explicando, cuando corresponda, \underline{con fundamentos reales}, las causas
+o razones de cada resultado obtenido. Por este motivo, el día de la entrega deben 
+concurrir todos los integrantes del grupo.
+
+El informe deberá respetar el modelo de referencia que se encuentra en el
+grupo, y se valorarán aquellos escritos usando la herramienta \TeX{} / 
+\LaTeX{}.
+
+\section{Recursos}
+Este trabajo práctico debe ser implementado en C\cite{KeRi}, y correr al menos en Linux.
+
+\section{Introducción}
+\label{secc::intro}
+La memoria a simular es una caché\cite{HePa} asociativa por conjuntos de cuatro vías, de 2KB de capacidad, bloques de 64 bytes, política de reemplazo FIFO y política de escritura WT/$\neg$WA. Se asume que el espacio de direcciones es de 16 bits, y hay entonces una memoria principal a simular con un tamaño de 64KB. Estas memorias pueden ser implementadas como variables globales. Cada bloque de la memoria caché deberá contar con su metadata, incluyendo el tag, el bit \texttt{V} y la información necesaria para implementar la política de reemplazo FIFO.
+\section{Programa}
+\label{secc::prog}
+ Se deben implementar las siguientes primitivas:
+\begin{verbatim}
+ void init()
+ unsigned int get_offset (unsigned int address)
+ unsigned int find_set(unsigned int address)
+ unsigned int select_oldest(unsigned int setnum)
+ void read_tocache(unsigned int blocknum, unsigned int way, unsigned int set)
+ void write_tocache(unsigned int address, unsigned char)
+ unsigned char read_byte(unsigned int address)
+ void write_byte(unsigned int address, unsigned char value)
+ float get_miss_rate()
+\end{verbatim}
+
+\begin{itemize}
+\item La función \texttt{init()} debe inicializar la memoria principal simulada en 0, los bloques de la caché como inválidos y la tasa de misses a 0. 
+\item La función \texttt{get\_offset(unsigned int address)} debe devolver el \emph{offset} del byte del bloque de memoria al que mapea la dirección \texttt{address}.
+\item La función \texttt{find\_set(unsigned int address)} debe devolver el conjunto de
+caché al que mapea la dirección \texttt{address}.
+\item La función \texttt{select\_oldest()} debe devolver la vía en la que está el bloque más ``viejo'' dentro de un conjunto, utilizando el campo correspondiente de los metadatos de los bloques del conjunto.
+\item La función \texttt{read\_tocache(unsigned int blocknum, unsigned int way, unsigned int set)} debe leer el bloque \texttt{blocknum} de memoria y guardarlo en el conjunto y vía indicados en la memoria caché.
+\item La función \texttt{read\_byte(unsigned int address)} debe buscar el valor del byte correspondiente a la posición \texttt{address} en la caché; si éste no se encuentra en la caché debe cargar ese bloque. El valor de retorno siempre debe ser el valor del byte almacenado en la dirección indicada. 
+\item La función \texttt{write\_byte(unsigned int address, unsigned char value)} debe escribir el valor \texttt{value} en la posición \texttt{address} de memoria, y en la posición correcta del bloque que corresponde a \texttt{address}, si el bloque se encuentra en la caché. Si no se encuentra, debe escribir el valor solamente en la memoria.
+\item La función \texttt{get\_miss\_rate()} debe devolver el porcentaje de misses desde que se inicializó la caché.
+\end{itemize}
+
+Con estas primitivas, hacer un programa que llame a \texttt{init()} y luego lea de un archivo una serie de comandos y los ejecute. Los comandos tendrán la siguiente forma:
+
+\begin{verbatim}
+ FLUSH
+ R ddddd
+ W ddddd, vvv
+ MR
+\end{verbatim}
+\begin{itemize}
+\item El comando ``\texttt{FLUSH}'' se ejecuta llamando a la función \texttt{init()}. Representa el vaciado del caché.
+\item Los comandos de la forma ``\texttt{R ddddd}'' se ejecutan llamando a la función \texttt{read\_byte(ddddd)} e imprimiendo el resultado.
+\item Los comandos de la forma ``\texttt{W ddddd, vvv}'' se ejecutan llamando a la función \texttt{write\_byte(unsigned int ddddd, char vvv)} e imprimiendo el resultado.
+\item El comando ``\texttt{MR}'' se ejecuta llamando a la función \texttt{get\_miss\_rate()} e imprimiendo el resultado.
+\end{itemize}
+El programa deberá chequear que las líneas del archivo correspondan a un comando con argumentos dentro del rango estipulado, o de lo contrario estar vacías. En caso de que una línea tenga otra cosa que espacios blancos y no tenga un comando válido, se deberá imprimir un mensaje de error informativo.
+
+\section{Mediciones}
+Se deberá incluir la salida que produzca el programa con los siguientes archivos de prueba:
+\begin{itemize}
+\item prueba1.mem
+\item prueba2.mem
+\item prueba3.mem
+\item prueba4.mem
+\item prueba5.mem
+\end{itemize}
+
+\subsection{Documentación}
+
+Es necesario que el informe incluya una descripción detallada de las técnicas
+y procesos de medición empleados, y de todos los pasos involucrados en el
+mismo, ya que forman parte de los objetivos principales del trabajo.
+
+\section{Informe}
+\label{secc::informe}
+
+El informe deberá incluir:
+
+\begin{itemize}
+\item	Este enunciado;
+\item   Documentación relevante al diseño e implementación del programa, incluyendo las estructuras de datos;
+\item   Instrucciones de compilación;
+\item	Resultados de las corridas de prueba;
+\item	El código fuente completo del programa, en dos formatos: digital e impreso en papel.
+\end{itemize}
+
+
+\section{Fecha de entrega}
+
+La fecha de entrega es el jueves 30 de Mayo de 2019.
+
+\begin{thebibliography}{99}
+\bibitem{HePa} {Hennessy, John L. and Patterson, David A., Computer Architecture: A Quantitative Approach, Third Edition, 2002.}
+\bibitem{KeRi} {Kernighan, Brian, and Ritchie, Dennis, The C Programming Language.}
+\end{thebibliography}
+
+\end{document}
